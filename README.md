@@ -2,6 +2,20 @@
 
 A minimal macOS notch app that shows your Fitbit data from the **Google Health API**.
 
+**Hover:** sleep, steps and heart rate
+
+![Hover state: sleep 7h 12m, 7,425 steps today, 80 bpm with resting 58](docs/notch-hover.png)
+
+**Click:** one small detail per metric
+
+![Expanded state: sleep stages bar, hourly step bars and a one-hour heart-rate line](docs/notch-expanded.png)
+
+**Idle:** blends into the notch, with a live dot and your heart rate
+
+![Idle state: black notch with a red live dot and 80 on the right](docs/notch-idle.png)
+
+<sub>Design previews with sample data, rendered from the web mockup at the same sizes and colors as the app.</sub>
+
 | State | What you see |
 |---|---|
 | Idle | The notch, with a pulsing live dot on the left and your heart rate on the right |
