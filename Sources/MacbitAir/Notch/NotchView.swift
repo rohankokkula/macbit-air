@@ -2,6 +2,7 @@ import AppKit
 import ServiceManagement
 import SwiftUI
 
+@MainActor
 struct NotchRootView: View {
     @Bindable var model: NotchModel
     var store: HealthStore
@@ -23,7 +24,6 @@ struct NotchRootView: View {
             }
             .frame(width: size.width, height: size.height)
             .contentShape(NotchShape(topRadius: NotchModel.flare, bottomRadius: model.bottomRadius))
-            .onTapGesture { if model.state != .idle { model.toggleExpanded() } }
             .contextMenu { menu }
 
             Spacer(minLength: 0)
@@ -43,10 +43,10 @@ struct NotchRootView: View {
             IdleWings(store: store, notchWidth: model.geometry.notchSize.width,
                       height: model.geometry.notchSize.height, visible: model.showIdleWings)
                 .transition(.opacity)
-        case .hover, .expanded:
+        case .hover, .detail:
             VStack(spacing: 0) {
                 Color.clear.frame(height: model.geometry.notchSize.height)   // camera area
-                ExpandedContent(store: store, expanded: model.state == .expanded)
+                ExpandedContent(store: store, detail: model.detailMetric) { model.show($0) }
                     .padding(.horizontal, 18)
                     .padding(.top, 8)
                     .padding(.bottom, 12)
@@ -80,6 +80,7 @@ struct NotchRootView: View {
 }
 
 /// Idle: a live dot on the left and heart rate on the right, on either side of the notch.
+@MainActor
 private struct IdleWings: View {
     var store: HealthStore
     var notchWidth: CGFloat
@@ -110,6 +111,7 @@ private struct IdleWings: View {
     }
 }
 
+@MainActor
 private struct LiveDot: View {
     var color: Color
     @State private var pulse = false

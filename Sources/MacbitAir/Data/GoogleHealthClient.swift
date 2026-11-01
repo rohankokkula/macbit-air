@@ -120,11 +120,18 @@ enum SleepStage: String, CaseIterable, Sendable {
     }
 }
 
+struct SleepSegment: Sendable, Equatable {
+    let stage: SleepStage
+    let start: Date
+    let end: Date
+}
+
 struct SleepSummary: Sendable, Equatable {
     let start: Date
     let end: Date
     let asleep: TimeInterval
     let stages: [SleepStage: TimeInterval]   // empty for "classic" logs without stages
+    var segments: [SleepSegment] = []        // stage timeline, sorted by start
 }
 
 enum HealthParser {
@@ -168,6 +175,7 @@ enum HealthParser {
                   end > start else { return nil }
 
             var stages: [SleepStage: TimeInterval] = [:]
+            var segments: [SleepSegment] = []
             for s in obj.find("stages")?.array ?? [] {
                 guard let raw = s.find(anyOf: ["type", "stage"])?.string?.uppercased() else { continue }
                 let stage: SleepStage? = SleepStage(rawValue: raw)
@@ -175,6 +183,7 @@ enum HealthParser {
                 guard let stage,
                       let ss = s.find("startTime")?.date, let se = s.find("endTime")?.date else { continue }
                 stages[stage, default: 0] += se.timeIntervalSince(ss)
+                segments.append(SleepSegment(stage: stage, start: ss, end: se))
             }
 
             let asleep: TimeInterval
@@ -185,7 +194,8 @@ enum HealthParser {
             } else {
                 asleep = end.timeIntervalSince(start)
             }
-            return SleepSummary(start: start, end: end, asleep: asleep, stages: stages)
+            return SleepSummary(start: start, end: end, asleep: asleep, stages: stages,
+                                segments: segments.sorted { $0.start < $1.start })
         }
         let main = sessions.filter { $0.asleep >= 2 * 3600 }
         return (main.isEmpty ? sessions : main).max { $0.end < $1.end }
